@@ -3,6 +3,7 @@
 int	main(int argc, char **argv)
 {
 	t_sim	sim;
+	pthread_t	monitor;
 
 	if (!parse_args(argc, argv, &sim))
 	{
@@ -39,14 +40,21 @@ int	main(int argc, char **argv)
 	    }
 	    i++;
     }
-
+	if (pthread_create(&monitor, NULL, monitor_routine, &sim) != 0)
+	{
+		printf("Failed to create monitor thread\n");
+		set_stop(&sim);
+		return (1);
+	}
+	
     i = 0;
     
     while (i < sim.number_of_coders)
     {
         pthread_join(sim.coders[i].thread, NULL);
         i++;
-    }
-
+	}
+	pthread_join(monitor, NULL);
+	destroy_sim(&sim);
 	return (0);
 }

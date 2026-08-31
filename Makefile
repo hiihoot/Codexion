@@ -4,8 +4,16 @@ CC = cc
 CFLAGS = -Wall -Wextra -Werror -pthread
 
 SRC = src/main.c \
-	  src/parse.c src/coder.c \
-	  src/utils.c src/init.c
+	  src/parse.c \
+	  src/coder.c \
+	  src/utils.c \
+	  src/init.c \
+	  src/logging.c \
+	  src/time.c \
+	  src/dongle.c \
+	  src/state.c \
+	  src/monitor.c \
+	  src/heap.c
 
 OBJ = $(SRC:.c=.o)
 

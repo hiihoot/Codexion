@@ -1,0 +1,76 @@
+
+take dongles
+   ↓
+compile
+   ↓
+release
+   ↓
+STOP?
+ ├── yes → exit
+ └── no
+      ↓
+    debug
+      ↓
+    STOP?
+   ├── yes → exit
+   └── no
+        ↓
+     refactor
+
+                 ┌──────────────┐
+                 │   MONITOR    │
+                 │    THREAD    │
+                 └──────┬───────┘
+                        │
+                  watches coders
+                        │
+             ┌──────────┴──────────┐
+             ▼                     ▼
+        coder burns out      everyone finished
+             │                     │
+             └──────────┬──────────┘
+                        ▼
+                    stop = 1
+                        ▼
+                 simulation ends
+
+
+
+             compile_count
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+   coder thread       monitor thread
+      writes              reads
+
+                 state_mutex
+                     │
+          ┌──────────┼───────────┐
+          │          │           │
+          ▼          ▼           ▼
+        stop     compile_count  last_compile_start
+          │          │           │
+          │          │           │
+       monitor     coder       coder
+       reads       writes      writes
+                     ▲           ▲
+                     │           │
+                  monitor      monitor
+                   reads        reads
+
+
+monitor
+   ↓
+"Are all coders finished?"
+   ↓
+yes → stop
+
+
+monitor
+   │
+   ├── Are all coders finished?
+   │       └── yes → stop
+   │
+   └── Did any coder burn out?
+           └── yes → log + stop
+

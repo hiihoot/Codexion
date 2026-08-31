@@ -11,6 +11,7 @@
 # define SCHED_FIFO 1
 # define SCHED_EDF 2
 
+typedef struct s_coder	t_coder;
 typedef struct s_sim	t_sim;
 
 typedef struct s_dongle
@@ -31,6 +32,20 @@ typedef struct s_coder
 	t_sim		*sim;
 }	t_coder;
 
+typedef struct s_request
+{
+	t_coder	*coder;
+	long	request_order;
+	long	deadline;
+}	t_request;
+
+typedef struct s_heap
+{
+	t_request	**items;
+	int			size;
+	int			capacity;
+}	t_heap;
+
 typedef struct s_sim
 {
 	int			number_of_coders;
@@ -45,6 +60,7 @@ typedef struct s_sim
 	long		start_time;
 	int			stop;
 
+	t_heap requests;
 	pthread_mutex_t	print_mutex;
 	pthread_mutex_t	state_mutex;
 
@@ -52,18 +68,26 @@ typedef struct s_sim
 	t_dongle	*dongles;
 }	t_sim;
 
+long	get_time_ms(void);
 int		ft_atoi(const char *str);
 int		parse_args(int argc, char **argv, t_sim *sim);
 int		init_sim(t_sim *sim);
 void	destroy_sim(t_sim *sim);
 void	*coder_routine(void *arg);
-long	get_time_ms(void);
 void	log_event(t_coder *coder, const char *message);
 int		take_dongles(t_coder *coder);
 void	drop_dongles(t_coder *coder);
 void	compile(t_coder *coder);
 void	debug(t_coder *coder);
 void	refactor(t_coder *coder);
+int		get_stop(t_sim *sim);
+void	set_stop(t_sim *sim);
+void	*monitor_routine(void *arg);
+int		all_coders_finished(t_sim *sim);
+int		get_compile_count(t_sim *sim, t_coder *coder);
+int	coder_has_burned_out(t_sim *sim, t_coder *coder);
+int	heap_push(t_heap *heap, t_request *request, int scheduler);
+t_request	*heap_pop(t_heap *heap, int scheduler);
 
 
 #endif

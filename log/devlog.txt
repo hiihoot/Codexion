@@ -18,3 +18,91 @@
 - compilation and Makefiles
 
 ## Things I don't fully understand yet
+
+
+# Day 2
+
+## What I built
+
+- `t_dongle`
+- `t_coder`
+- dynamic allocation for coders and dongles
+- dongle mutex initialization
+- coder initialization
+- circular coder/dongle relationships
+- one-coder special case
+- `init_sim()`
+- `destroy_sim()`
+- `get_time_ms()`
+- `log_event()`
+- `coder_routine()`
+- `take_dongles()`
+- `drop_dongles()`
+- compile/debug/refactor lifecycle
+- `pthread_create()`
+- `pthread_join()`
+
+## What I learned
+
+- pointers to structs
+- `->` vs `.`
+- `&` and addresses
+- dynamic memory allocation with `malloc()`
+- memory ownership and cleanup
+- forward declarations
+- `pthread_t`
+- `pthread_create()`
+- `pthread_join()`
+- `void *` thread arguments
+- `pthread_mutex_t`
+- `pthread_mutex_lock()`
+- `pthread_mutex_unlock()`
+- shared resources
+- circular data structures
+- `gettimeofday()`
+- milliseconds and `usleep()`
+- serialized logging
+- thread execution order is not guaranteed
+
+## Things I don't fully understand yet
+
+[ ] What exactly does `pthread_mutex_lock()` do?
+
+[ ] Why does each dongle have its own mutex?
+
+[ ] Why do two neighboring coders point to the same dongle?
+
+[ ] Why does the one-coder case need special handling?
+
+[ ] What does `usleep()` expect?
+
+[ ] Why do we multiply milliseconds by 1000?
+
+[ ] Why is `last_compile_start` updated when compiling starts?
+
+[ ] Why is `compile_count` stored in the coder?
+
+[ ] Why does `coder->sim` give access to the simulation?
+
+[ ] Why can the two coder threads execute in different orders?
+
+[ ] What is the difference between a thread and a process?
+
+[ ] Why do we need `pthread_join()`?
+
+[ ] What happens if two threads try to lock the same mutex?
+
+[ ] What does a `void *` actually represent?
+
+[ ] Why do `left` and `right` point to the same dongle object for neighboring coders?
+
+
+## day 3:
+
+[ ] gettimeofday()
+[ ] elapsed time
+[ ] mutex-protected shared output
+[ ] shared state between threads
+[ ] compile/debug/refactor as a state machine
+[ ] clean stop conditions
+[ ] why shared variables need protection

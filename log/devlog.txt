@@ -1,0 +1,20 @@
+# Day 1
+
+## What I built
+
+- Makefile
+- argument parser
+- t_sim
+- strict numeric validation
+- fifo/edf validation
+
+## What I learned
+
+- argc/argv
+- char **
+- structs
+- pointers
+- header guards
+- compilation and Makefiles
+
+## Things I don't fully understand yet

@@ -1,35 +1,25 @@
-NAME = codexion
+NAME		= codexion
+CC			= cc
+CFLAGS		= -Wall -Wextra -Werror -pthread -Iinclude
+SRC_DIR		= src
+OBJ_DIR		= obj
+INC_DIR		= include
 
-CC = cc
-CFLAGS = -Wall -Wextra -Werror -pthread
-
-SRC = src/main.c \
-	  src/parse.c \
-	  src/coder.c \
-	  src/utils.c \
-	  src/init.c \
-	  src/logging.c \
-	  src/time.c \
-	  src/dongle.c \
-	  src/state.c \
-	  src/monitor.c \
-	  src/heap.c \
-	  src/scheduler.c
-
-OBJ = $(SRC:.c=.o)
-
-INCLUDES = -Iinclude
+# Find all .c files recursively in src/
+SRCS		:= $(shell find $(SRC_DIR) -type f -name "*.c")
+OBJS		:= $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
 
 all: $(NAME)
 
-$(NAME): $(OBJ)
-	$(CC) $(CFLAGS) $(INCLUDES) $(OBJ) -o $(NAME)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_DIR)/codexion.h
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+$(NAME): $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 clean:
-	rm -f $(OBJ)
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -f $(NAME)

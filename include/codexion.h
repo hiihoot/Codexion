@@ -20,6 +20,13 @@ typedef struct s_dongle
 	long			available_at;
 }	t_dongle;
 
+typedef struct s_request
+{
+	t_coder	*coder;
+	long	request_order;
+	long	deadline;
+}	t_request;
+
 typedef struct s_coder
 {
 	int			id;
@@ -30,14 +37,9 @@ typedef struct s_coder
 	t_dongle	*left;
 	t_dongle	*right;
 	t_sim		*sim;
+	t_request   request;
 }	t_coder;
 
-typedef struct s_request
-{
-	t_coder	*coder;
-	long	request_order;
-	long	deadline;
-}	t_request;
 
 typedef struct s_heap
 {

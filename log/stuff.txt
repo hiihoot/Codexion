@@ -108,3 +108,40 @@ burnout = 1800
 [1] [2] [3] [4]
 
 1_compile + cooldown + 2_compile + cooldown
+
+
+├── codexion
+├── include
+│   └── codexion.h
+├── log
+│   ├── devlog.txt
+│   └── stuff.txt
+├── Makefile
+├── README.md
+└── src
+    ├── coder.c
+    ├── coder.o
+    ├── dongle.c
+    ├── dongle.o
+    ├── heap.c
+    ├── heap.o
+    ├── init.c
+    ├── init.o
+    ├── logging.c
+    ├── logging.o
+    ├── main.c
+    ├── main.o
+    ├── monitor.c
+    ├── monitor.o
+    ├── parse.c
+    ├── parse.o
+    ├── scheduler.c
+    ├── scheduler.o
+    ├── state.c
+    ├── state.o
+    ├── time.c
+    ├── time.o
+    ├── utils.c
+    └── utils.o
+
+4 directories, 30 files

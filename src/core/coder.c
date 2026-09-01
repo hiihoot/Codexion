@@ -36,9 +36,9 @@ void	*coder_routine(void *arg)
 		if (!take_dongles(coder))
 			return (NULL);
 		compile(coder);
+		drop_dongles(coder);
 		if (get_stop(coder->sim))
 			break;
-		drop_dongles(coder);
 		debug(coder);
 		if (get_stop(coder->sim))
 			break;

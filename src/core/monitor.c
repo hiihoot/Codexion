@@ -24,7 +24,7 @@ void	*monitor_routine(void *arg)
 			}
 			i++;
 		}
-		usleep(1000);
+		usleep(100);
 		pthread_mutex_lock(&sim->scheduler_mutex);
 		pthread_cond_broadcast(&sim->scheduler_cond);
 		pthread_mutex_unlock(&sim->scheduler_mutex);

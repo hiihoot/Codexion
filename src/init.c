@@ -63,10 +63,30 @@ static void	assign_dongles(t_sim *sim)
 	}
 }
 
+static int	init_heap(t_sim *sim)
+{
+	sim->requests.capacity = sim->number_of_coders;
+	sim->requests.size = 0;
+	sim->requests.items = malloc(
+		sizeof(t_request *) * sim->requests.capacity);
+	if (!sim->requests.items)
+		return (0);
+	return (1);
+}
+
 int	init_sim(t_sim *sim)
 {
     sim->start_time = get_time_ms();
+	sim->next_request_order = 0;
     sim->stop = 0;
+
+	if (pthread_mutex_init(&sim->scheduler_mutex, NULL) != 0)
+		return (0);
+	if (pthread_cond_init(&sim->scheduler_cond, NULL) != 0)
+	{
+		pthread_mutex_destroy(&sim->scheduler_mutex);
+		return (0);
+	}
     
 	if (!allocate_resources(sim))
 		return (0);
@@ -80,6 +100,13 @@ int	init_sim(t_sim *sim)
 	}
 	init_coders(sim);
 	assign_dongles(sim);
+
+	if (!init_heap(sim))
+	{
+		destroy_sim(sim);
+		return (0);
+	}
+
 	if (pthread_mutex_init(&sim->print_mutex, NULL) != 0)
 	{
 		destroy_sim(sim);
@@ -106,6 +133,10 @@ void	destroy_sim(t_sim *sim)
 	}
 	pthread_mutex_destroy(&sim->print_mutex);
 	pthread_mutex_destroy(&sim->state_mutex);
+	pthread_mutex_destroy(&sim->scheduler_mutex);
+	pthread_cond_destroy(&sim->scheduler_cond);
+	free(sim->requests.items);
+	sim->requests.items = NULL;
 	free(sim->coders);
 	free(sim->dongles);
 	sim->coders = NULL;

@@ -74,3 +74,37 @@ monitor
    └── Did any coder burn out?
            └── yes → log + stop
 
+
+
+
+### burnout calculation
+
+
+./codexion 5 1800 200 200 200 10 400 fifo
+
+
+total_cycle = 200 + 200 + 200 + 400 = 1000
+
+waiting_time = (200 + 400) * 3 = 1800
+
+burnout = 1800
+
+
+
+
+
+
+
+[1] [2]
+
+1_compile + cooldown + 2_compile + cooldown
+
+
+[1] [2] [3]
+
+1_compile + cooldown + 2_compile + cooldown + 3_compile + cooldown
+
+
+[1] [2] [3] [4]
+
+1_compile + cooldown + 2_compile + cooldown

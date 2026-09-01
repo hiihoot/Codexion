@@ -13,7 +13,8 @@ SRC = src/main.c \
 	  src/dongle.c \
 	  src/state.c \
 	  src/monitor.c \
-	  src/heap.c
+	  src/heap.c \
+	  src/scheduler.c
 
 OBJ = $(SRC:.c=.o)
 

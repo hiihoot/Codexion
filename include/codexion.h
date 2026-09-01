@@ -53,6 +53,7 @@ typedef struct s_sim
 	long		time_to_compile;
 	long		time_to_debug;
 	long		time_to_refactor;
+	long		next_request_order;
 	int			number_of_compiles_required;
 	long		dongle_cooldown;
 	int			scheduler;
@@ -61,6 +62,9 @@ typedef struct s_sim
 	int			stop;
 
 	t_heap requests;
+	pthread_mutex_t	scheduler_mutex;
+	pthread_cond_t	scheduler_cond;
+
 	pthread_mutex_t	print_mutex;
 	pthread_mutex_t	state_mutex;
 
@@ -85,9 +89,11 @@ void	set_stop(t_sim *sim);
 void	*monitor_routine(void *arg);
 int		all_coders_finished(t_sim *sim);
 int		get_compile_count(t_sim *sim, t_coder *coder);
-int	coder_has_burned_out(t_sim *sim, t_coder *coder);
-int	heap_push(t_heap *heap, t_request *request, int scheduler);
+int		coder_has_burned_out(t_sim *sim, t_coder *coder);
+int		heap_push(t_heap *heap, t_request *request, int scheduler);
 t_request	*heap_pop(t_heap *heap, int scheduler);
+int		scheduler_take_dongles(t_coder *coder);
+void	scheduler_drop_dongles(t_coder *coder);
 
 
 #endif

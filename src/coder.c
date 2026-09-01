@@ -35,8 +35,6 @@ void	*coder_routine(void *arg)
 	{
 		if (!take_dongles(coder))
 			return (NULL);
-		log_event(coder, "has taken a dongle");
-		log_event(coder, "has taken a dongle");
 		compile(coder);
 		if (get_stop(coder->sim))
 			break;

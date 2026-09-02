@@ -1,4 +1,4 @@
-#include <codexion.h>
+#include "codexion.h"
 
 void	*monitor_routine(void *arg)
 {
@@ -24,10 +24,16 @@ void	*monitor_routine(void *arg)
 			}
 			i++;
 		}
-		usleep(100);
+		usleep(1000);
+
 		pthread_mutex_lock(&sim->scheduler_mutex);
 		pthread_cond_broadcast(&sim->scheduler_cond);
 		pthread_mutex_unlock(&sim->scheduler_mutex);
 	}
+
+	pthread_mutex_lock(&sim->scheduler_mutex);
+	pthread_cond_broadcast(&sim->scheduler_cond);
+	pthread_mutex_unlock(&sim->scheduler_mutex);
+
 	return (NULL);
 }

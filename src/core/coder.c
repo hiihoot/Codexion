@@ -31,8 +31,13 @@ void	*coder_routine(void *arg)
 	t_coder	*coder;
 
 	coder = (t_coder *)arg;
-	while (!get_stop(coder->sim) && get_compile_count(coder->sim, coder) < coder->sim->number_of_compiles_required)	
+	while (!get_stop(coder->sim)
+		&& get_compile_count(coder->sim, coder) < coder->sim->number_of_compiles_required)
 	{
+		/* Self‑check: if deadline already passed, stop */
+		if (get_time_ms() - coder->last_compile_start >= coder->sim->time_to_burnout)
+			break;
+
 		if (!take_dongles(coder))
 			return (NULL);
 		compile(coder);

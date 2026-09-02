@@ -6,7 +6,8 @@
 # include <stdlib.h>
 # include <string.h>
 # include <sys/time.h>
-#include <unistd.h>
+# include <unistd.h>
+# include <time.h>   // for clock_gettime (if used in scheduler)
 
 # define SCHED_FIFO 1
 # define SCHED_EDF 2
@@ -40,7 +41,6 @@ typedef struct s_coder
 	t_request   request;
 }	t_coder;
 
-
 typedef struct s_heap
 {
 	t_request	**items;
@@ -63,7 +63,7 @@ typedef struct s_sim
 	long		start_time;
 	int			stop;
 
-	t_heap requests;
+	t_heap		requests;
 	pthread_mutex_t	scheduler_mutex;
 	pthread_cond_t	scheduler_cond;
 
@@ -74,28 +74,49 @@ typedef struct s_sim
 	t_dongle	*dongles;
 }	t_sim;
 
+/* Time and utility */
 long	get_time_ms(void);
 int		ft_atoi(const char *str);
+
+/* Parsing */
 int		parse_args(int argc, char **argv, t_sim *sim);
+
+/* Init / Destroy */
 int		init_sim(t_sim *sim);
 void	destroy_sim(t_sim *sim);
+
+/* Coder lifecycle */
 void	*coder_routine(void *arg);
-void	log_event(t_coder *coder, const char *message);
-int		take_dongles(t_coder *coder);
-void	drop_dongles(t_coder *coder);
 void	compile(t_coder *coder);
 void	debug(t_coder *coder);
 void	refactor(t_coder *coder);
+
+/* Dongle management */
+int		take_dongles(t_coder *coder);
+void	drop_dongles(t_coder *coder);
+
+/* Logging */
+void	log_event(t_coder *coder, const char *message);
+
+/* State */
 int		get_stop(t_sim *sim);
 void	set_stop(t_sim *sim);
-void	*monitor_routine(void *arg);
-int		all_coders_finished(t_sim *sim);
 int		get_compile_count(t_sim *sim, t_coder *coder);
+int		all_coders_finished(t_sim *sim);
 int		coder_has_burned_out(t_sim *sim, t_coder *coder);
+
+/* Monitor */
+void	*monitor_routine(void *arg);
+
+/* Heap (priority queue) */
 int		heap_push(t_heap *heap, t_request *request, int scheduler);
 t_request	*heap_pop(t_heap *heap, int scheduler);
+int		request_has_priority(t_request *a, t_request *b, int scheduler);
+void	heap_up(t_heap *heap, int index, int scheduler);
+void	heap_down(t_heap *heap, int index, int scheduler);
+
+/* Scheduler */
 int		scheduler_take_dongles(t_coder *coder);
 void	scheduler_drop_dongles(t_coder *coder);
-
 
 #endif

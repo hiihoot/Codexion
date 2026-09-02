@@ -9,7 +9,7 @@ static void	swap_requests(t_request **a, t_request **b)
 	*b = tmp;
 }
 
-static int	request_has_priority(t_request *a, t_request *b, int scheduler)
+int	request_has_priority(t_request *a, t_request *b, int scheduler)
 {
 	if (scheduler == SCHED_FIFO)
 		return (a->request_order < b->request_order);
@@ -18,7 +18,7 @@ static int	request_has_priority(t_request *a, t_request *b, int scheduler)
 	return (a->coder->id < b->coder->id);
 }
 
-static void	heap_up(t_heap *heap, int index, int scheduler)
+void	heap_up(t_heap *heap, int index, int scheduler)
 {
 	int	parent;
 
@@ -46,7 +46,7 @@ int	heap_push(t_heap *heap, t_request *request, int scheduler)
 	return (1);
 }
 
-static void	heap_down(t_heap *heap, int index, int scheduler)
+void	heap_down(t_heap *heap, int index, int scheduler)
 {
 	int	left;
 	int	right;

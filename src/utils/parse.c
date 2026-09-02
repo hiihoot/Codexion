@@ -1,4 +1,4 @@
-#include <codexion.h>
+#include "codexion.h"
 
 static int	parse_scheduler(const char *str)
 {
@@ -11,19 +11,20 @@ static int	parse_scheduler(const char *str)
 
 static int	is_digit_string(const char *str)
 {
-    int	i;
+	int	i;
 
-    i = 0;
-    if (!str || !str[0])
-        return (0);
-    while (str[i])
-    {
-        if (str[i] < '0' || str[i] > '9')
-            return (0);
-        i++;
-    }
-    return (1);
+	i = 0;
+	if (!str || !str[0])
+		return (0);
+	while (str[i])
+	{
+		if (str[i] < '0' || str[i] > '9')
+			return (0);
+		i++;
+	}
+	return (1);
 }
+
 int	parse_args(int argc, char **argv, t_sim *sim)
 {
 	if (argc != 9)
@@ -48,4 +49,3 @@ int	parse_args(int argc, char **argv, t_sim *sim)
 		return (0);
 	return (1);
 }
-

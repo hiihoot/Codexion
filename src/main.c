@@ -12,20 +12,20 @@
 
 #include "codexion.h"
 
-static void	print_config(t_sim *sim)
-{
-	printf("coders: %d\n", sim->number_of_coders);
-	printf("burnout: %ld\n", sim->time_to_burnout);
-	printf("compile: %ld\n", sim->time_to_compile);
-	printf("debug: %ld\n", sim->time_to_debug);
-	printf("refactor: %ld\n", sim->time_to_refactor);
-	printf("required: %d\n", sim->number_of_compiles_required);
-	printf("cooldown: %ld\n", sim->dongle_cooldown);
-	if (sim->scheduler == SCHED_FIFO)
-		printf("scheduler: fifo\n");
-	else
-		printf("scheduler: edf\n");
-}
+// static void	print_config(t_sim *sim)
+// {
+// 	printf("coders: %d\n", sim->number_of_coders);
+// 	printf("burnout: %ld\n", sim->time_to_burnout);
+// 	printf("compile: %ld\n", sim->time_to_compile);
+// 	printf("debug: %ld\n", sim->time_to_debug);
+// 	printf("refactor: %ld\n", sim->time_to_refactor);
+// 	printf("required: %d\n", sim->number_of_compiles_required);
+// 	printf("cooldown: %ld\n", sim->dongle_cooldown);
+// 	if (sim->scheduler == SCHED_FIFO)
+// 		printf("scheduler: fifo\n");
+// 	else
+// 		printf("scheduler: edf\n");
+// }
 
 static int	create_coder_threads(t_sim *sim)
 {
@@ -84,7 +84,7 @@ int	main(int argc, char **argv)
 		printf("Initialization failed\n");
 		return (1);
 	}
-	print_config(&sim);
+	// print_config(&sim);
 	if (!create_coder_threads(&sim))
 	{
 		destroy_sim(&sim);

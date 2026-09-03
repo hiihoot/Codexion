@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   state.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/03 11:00:52 by sait-mou          #+#    #+#             */
+/*   Updated: 2026/09/03 11:00:53 by sait-mou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 int	get_stop(t_sim *sim)
@@ -41,7 +53,7 @@ int	all_coders_finished(t_sim *sim)
 			< sim->number_of_compiles_required)
 		{
 			finished = 0;
-			break;
+			break ;
 		}
 		i++;
 	}
@@ -57,7 +69,6 @@ int	coder_has_burned_out(t_sim *sim, t_coder *coder)
 	pthread_mutex_lock(&sim->state_mutex);
 	last_compile_start = coder->last_compile_start;
 	pthread_mutex_unlock(&sim->state_mutex);
-
 	now = get_time_ms();
 	return (now - last_compile_start >= sim->time_to_burnout);
 }

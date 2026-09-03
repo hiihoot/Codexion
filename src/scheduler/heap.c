@@ -1,13 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   heap.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/03 10:34:27 by sait-mou          #+#    #+#             */
+/*   Updated: 2026/09/03 15:11:19 by sait-mou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
-
-static void	swap_requests(t_request **a, t_request **b)
-{
-	t_request	*tmp;
-
-	tmp = *a;
-	*a = *b;
-	*b = tmp;
-}
 
 int	request_has_priority(t_request *a, t_request *b, int scheduler)
 {
@@ -20,15 +23,18 @@ int	request_has_priority(t_request *a, t_request *b, int scheduler)
 
 void	heap_up(t_heap *heap, int index, int scheduler)
 {
-	int	parent;
+	int			parent;
+	t_request	*tmp;
 
 	while (index > 0)
 	{
 		parent = (index - 1) / 2;
 		if (!request_has_priority(heap->items[index],
 				heap->items[parent], scheduler))
-			break;
-		swap_requests(&heap->items[index], &heap->items[parent]);
+			break ;
+		tmp = heap->items[index];
+		heap->items[index] = heap->items[parent];
+		heap->items[parent] = tmp;
 		index = parent;
 	}
 }
@@ -48,30 +54,29 @@ int	heap_push(t_heap *heap, t_request *request, int scheduler)
 
 void	heap_down(t_heap *heap, int index, int scheduler)
 {
-	int	left;
-	int	right;
-	int	best;
+	int			left;
+	int			right;
+	int			best;
+	t_request	*tmp;
 
 	while (1)
 	{
 		left = index * 2 + 1;
 		right = index * 2 + 2;
 		best = index;
-
 		if (left < heap->size
 			&& request_has_priority(heap->items[left],
 				heap->items[best], scheduler))
 			best = left;
-
 		if (right < heap->size
 			&& request_has_priority(heap->items[right],
 				heap->items[best], scheduler))
 			best = right;
-
 		if (best == index)
-			break;
-
-		swap_requests(&heap->items[index], &heap->items[best]);
+			break ;
+		tmp = heap->items[index];
+		heap->items[index] = heap->items[best];
+		heap->items[best] = tmp;
 		index = best;
 	}
 }
@@ -82,10 +87,8 @@ t_request	*heap_pop(t_heap *heap, int scheduler)
 
 	if (heap->size == 0)
 		return (NULL);
-
 	request = heap->items[0];
 	heap->size--;
-
 	if (heap->size > 0)
 	{
 		heap->items[0] = heap->items[heap->size];

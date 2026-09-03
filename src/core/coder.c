@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   coder.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/03 10:45:33 by sait-mou          #+#    #+#             */
+/*   Updated: 2026/09/03 10:45:34 by sait-mou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 void	compile(t_coder *coder)
@@ -5,10 +17,8 @@ void	compile(t_coder *coder)
 	pthread_mutex_lock(&coder->sim->state_mutex);
 	coder->last_compile_start = get_time_ms();
 	pthread_mutex_unlock(&coder->sim->state_mutex);
-
 	log_event(coder, "is compiling");
 	usleep(coder->sim->time_to_compile * 1000);
-
 	pthread_mutex_lock(&coder->sim->state_mutex);
 	coder->compile_count++;
 	pthread_mutex_unlock(&coder->sim->state_mutex);
@@ -32,21 +42,21 @@ void	*coder_routine(void *arg)
 
 	coder = (t_coder *)arg;
 	while (!get_stop(coder->sim)
-		&& get_compile_count(coder->sim, coder) < coder->sim->number_of_compiles_required)
+		&& get_compile_count(coder->sim, coder)
+		< coder->sim->number_of_compiles_required)
 	{
-		/* Self‑check: if deadline already passed, stop */
-		if (get_time_ms() - coder->last_compile_start >= coder->sim->time_to_burnout)
-			break;
-
+		if (get_time_ms() - coder->last_compile_start
+			>= coder->sim->time_to_burnout)
+			break ;
 		if (!take_dongles(coder))
 			return (NULL);
 		compile(coder);
 		drop_dongles(coder);
 		if (get_stop(coder->sim))
-			break;
+			break ;
 		debug(coder);
 		if (get_stop(coder->sim))
-			break;
+			break ;
 		refactor(coder);
 	}
 	return (NULL);

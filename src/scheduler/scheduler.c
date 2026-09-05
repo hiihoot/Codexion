@@ -1,8 +1,21 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   scheduler.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/05 20:00:00 by sait-mou          #+#    #+#             */
+/*   Updated: 2026/09/05 16:15:40 by sait-mou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 static int	find_candidate(t_sim *sim, long now)
 {
-	int			i, cand;
+	int			i;
+	int			cand;
 	t_request	*r;
 	t_coder		*c;
 	long		last;
@@ -16,14 +29,11 @@ static int	find_candidate(t_sim *sim, long now)
 		pthread_mutex_lock(&sim->state_mutex);
 		last = c->last_compile_start;
 		pthread_mutex_unlock(&sim->state_mutex);
-		if (now - last < sim->time_to_burnout)
+		if (now - last < sim->time_to_burnout && dongles_ready(c, now))
 		{
-			if (dongles_ready(c, now))
-			{
-				if (cand == -1 || request_has_priority(r,
-						sim->requests.items[cand], sim->scheduler))
-					cand = i;
-			}
+			if (cand == -1 || request_has_priority(r,
+					sim->requests.items[cand], sim->scheduler))
+				cand = i;
 		}
 		i++;
 	}
@@ -52,7 +62,6 @@ static int	push_request(t_sim *sim, t_coder *coder)
 	coder->request.deadline = coder->last_compile_start
 		+ sim->time_to_burnout;
 	pthread_mutex_unlock(&sim->state_mutex);
-
 	pthread_mutex_lock(&sim->scheduler_mutex);
 	coder->request.request_order = sim->next_request_order++;
 	if (!heap_push(&sim->requests, &coder->request, sim->scheduler))
@@ -66,27 +75,24 @@ static int	push_request(t_sim *sim, t_coder *coder)
 int	scheduler_take_dongles(t_coder *coder)
 {
 	t_sim	*sim;
+	long	now;
 
 	sim = coder->sim;
 	if (get_stop(sim))
 		return (0);
-
-	/* Special case: one coder, one dongle */
+	if (sim->number_of_coders == 1)
+		return (0);
 	if (sim->number_of_coders == 1)
 	{
-		long now = get_time_ms();
+		now = get_time_ms();
 		if (!dongles_ready(coder, now))
 			return (0);
 		if (!lock_dongles(coder))
 			return (0);
 		if (!get_stop(sim))
-		{
-			/* only one log for the single dongle */
 			log_event(coder, "has taken a dongle");
-		}
 		return (1);
 	}
-
 	if (!push_request(sim, coder))
 		return (0);
 	return (main_loop(sim, coder));
@@ -102,18 +108,13 @@ void	scheduler_drop_dongles(t_coder *coder)
 	coder->left->available_at = avail;
 	if (sim->number_of_coders > 1)
 		coder->right->available_at = avail;
-
 	if (sim->number_of_coders == 1)
-	{
-		/* Only one mutex to unlock */
 		pthread_mutex_unlock(&coder->left->mutex);
-	}
 	else
 	{
 		pthread_mutex_unlock(&coder->left->mutex);
 		pthread_mutex_unlock(&coder->right->mutex);
 	}
-
 	pthread_mutex_lock(&sim->scheduler_mutex);
 	pthread_cond_broadcast(&sim->scheduler_cond);
 	pthread_mutex_unlock(&sim->scheduler_mutex);

@@ -6,7 +6,7 @@
 /*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 15:50:58 by sait-mou          #+#    #+#             */
-/*   Updated: 2026/09/03 16:37:30 by sait-mou         ###   ########.fr       */
+/*   Updated: 2026/09/05 16:12:49 by sait-mou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,6 @@ int	main(int argc, char **argv)
 		printf("Initialization failed\n");
 		return (1);
 	}
-	// print_config(&sim);
 	if (!create_coder_threads(&sim))
 	{
 		destroy_sim(&sim);

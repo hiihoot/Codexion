@@ -6,7 +6,7 @@
 /*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 15:50:58 by sait-mou          #+#    #+#             */
-/*   Updated: 2026/09/05 13:25:47 by sait-mou         ###   ########.fr       */
+/*   Updated: 2026/09/05 16:04:58 by sait-mou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ typedef struct s_sim
 	long			time_to_compile;
 	long			time_to_debug;
 	long			time_to_refactor;
-	long			next_request_order;   /* for true FIFO */
+	long			next_request_order;
 	int				number_of_compiles_required;
 	long			dongle_cooldown;
 	int				scheduler;
@@ -92,58 +92,58 @@ typedef struct s_sim
 }	t_sim;
 
 /* ---- Time & Utilities ---- */
-long	get_time_ms(void);
-void	set_timeout(struct timespec *ts, long wait_ms);
-int		ft_atoi(const char *str);
+long		get_time_ms(void);
+void		set_timeout(struct timespec *ts, long wait_ms);
+int			ft_atoi(const char *str);
 
 /* ---- Dongle Mutex Helpers ---- */
-int		lock_dongles(t_coder *coder);
-int		dongles_ready(t_coder *coder, long now);
-long	cooldown_left(t_coder *coder, long now);
+int			lock_dongles(t_coder *coder);
+int			dongles_ready(t_coder *coder, long now);
+long		cooldown_left(t_coder *coder, long now);
 
 /* ---- Parsing ---- */
-int		parse_args(int argc, char **argv, t_sim *sim);
+int			parse_args(int argc, char **argv, t_sim *sim);
 
 /* ---- Init / Destroy ---- */
-int		init_sim(t_sim *sim);
-void	destroy_sim(t_sim *sim);
+int			init_sim(t_sim *sim);
+void		destroy_sim(t_sim *sim);
 
 /* ---- Coder Lifecycle ---- */
-void	*coder_routine(void *arg);
-void	compile(t_coder *coder);
-void	debug(t_coder *coder);
-void	refactor(t_coder *coder);
+void		*coder_routine(void *arg);
+void		compile(t_coder *coder);
+void		debug(t_coder *coder);
+void		refactor(t_coder *coder);
 
 /* ---- Dongle Interface (wrappers) ---- */
-int		take_dongles(t_coder *coder);
-void	drop_dongles(t_coder *coder);
+int			take_dongles(t_coder *coder);
+void		drop_dongles(t_coder *coder);
 
 /* ---- Scheduler Core ---- */
-int		scheduler_take_dongles(t_coder *coder);
-void	scheduler_drop_dongles(t_coder *coder);
+int			scheduler_take_dongles(t_coder *coder);
+void		scheduler_drop_dongles(t_coder *coder);
 
 /* ---- Scheduler Helpers (shared between scheduler.c & helpers) ---- */
-int		acquire_candidate(t_sim *sim, t_coder *coder);
-void	wait_next(t_sim *sim, t_coder *coder);
+int			acquire_candidate(t_sim *sim, t_coder *coder);
+void		wait_next(t_sim *sim, t_coder *coder);
 
 /* ---- Heap (Priority Queue) ---- */
-int		heap_push(t_heap *heap, t_request *request, int scheduler);
+int			heap_push(t_heap *heap, t_request *request, int scheduler);
 t_request	*heap_pop(t_heap *heap, int scheduler);
-int		request_has_priority(t_request *a, t_request *b, int scheduler);
-void	heap_up(t_heap *heap, int index, int scheduler);
-void	heap_down(t_heap *heap, int index, int scheduler);
+int			request_has_priority(t_request *a, t_request *b, int scheduler);
+void		heap_up(t_heap *heap, int index, int scheduler);
+void		heap_down(t_heap *heap, int index, int scheduler);
 
 /* ---- Logging ---- */
-void	log_event(t_coder *coder, const char *message);
+void		log_event(t_coder *coder, const char *message);
 
 /* ---- Global State ---- */
-int		get_stop(t_sim *sim);
-void	set_stop(t_sim *sim);
-int		get_compile_count(t_sim *sim, t_coder *coder);
-int		all_coders_finished(t_sim *sim);
-int		coder_has_burned_out(t_sim *sim, t_coder *coder);
+int			get_stop(t_sim *sim);
+void		set_stop(t_sim *sim);
+int			get_compile_count(t_sim *sim, t_coder *coder);
+int			all_coders_finished(t_sim *sim);
+int			coder_has_burned_out(t_sim *sim, t_coder *coder);
 
 /* ---- Monitor ---- */
-void	*monitor_routine(void *arg);
+void		*monitor_routine(void *arg);
 
 #endif

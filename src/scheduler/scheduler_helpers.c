@@ -1,26 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   scheduler_helpers.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/05 20:00:00 by sait-mou          #+#    #+#             */
+/*   Updated: 2026/09/05 16:10:55 by sait-mou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
-
-static int	find_request_index(t_sim *sim, t_coder *coder)
-{
-	int	i;
-
-	i = 0;
-	while (i < sim->requests.size
-		&& sim->requests.items[i] != &coder->request)
-		i++;
-	return (i);
-}
-
-static void	remove_request(t_sim *sim, int index)
-{
-	sim->requests.size--;
-	if (index < sim->requests.size)
-	{
-		sim->requests.items[index] = sim->requests.items[sim->requests.size];
-		heap_up(&sim->requests, index, sim->scheduler);
-		heap_down(&sim->requests, index, sim->scheduler);
-	}
-}
 
 static int	grant_dongles_to_coder(t_sim *sim, t_coder *coder)
 {
@@ -39,36 +29,51 @@ int	acquire_candidate(t_sim *sim, t_coder *coder)
 {
 	int	index;
 
-	index = find_request_index(sim, coder);
+	index = 0;
+	while (index < sim->requests.size
+		&& sim->requests.items[index] != &coder->request)
+		index++;
 	if (index == sim->requests.size)
 	{
 		pthread_mutex_unlock(&sim->scheduler_mutex);
 		return (0);
 	}
-	remove_request(sim, index);
+	sim->requests.size--;
+	if (index < sim->requests.size)
+	{
+		sim->requests.items[index] = sim->requests.items[sim->requests.size];
+		heap_up(&sim->requests, index, sim->scheduler);
+		heap_down(&sim->requests, index, sim->scheduler);
+	}
 	return (grant_dongles_to_coder(sim, coder));
+}
+
+static long	compute_wait(t_sim *sim, t_coder *coder, long now)
+{
+	long	last;
+	long	deadline_ms;
+	long	cool;
+
+	pthread_mutex_lock(&sim->state_mutex);
+	last = coder->last_compile_start;
+	pthread_mutex_unlock(&sim->state_mutex);
+	deadline_ms = last + sim->time_to_burnout;
+	if (deadline_ms <= now)
+		return (0);
+	cool = cooldown_left(coder, now);
+	if (cool < deadline_ms - now)
+		return (cool);
+	return (deadline_ms - now);
 }
 
 void	wait_next(t_sim *sim, t_coder *coder)
 {
 	struct timespec	ts;
-	long		now, last, deadline_ms, cool, wait_ms;
+	long			now;
+	long			wait_ms;
 
 	now = get_time_ms();
-	pthread_mutex_lock(&sim->state_mutex);
-	last = coder->last_compile_start;
-	pthread_mutex_unlock(&sim->state_mutex);
-
-	deadline_ms = last + sim->time_to_burnout;
-	wait_ms = deadline_ms - now;
-	if (wait_ms < 0)
-		wait_ms = 0;
-
-	/* Wake early when a dongle becomes available */
-	cool = cooldown_left(coder, now);
-	if (cool < wait_ms)
-		wait_ms = cool;
-
+	wait_ms = compute_wait(sim, coder, now);
 	clock_gettime(CLOCK_REALTIME, &ts);
 	ts.tv_sec += wait_ms / 1000;
 	ts.tv_nsec += (wait_ms % 1000) * 1000000;

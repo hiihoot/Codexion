@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   monitor.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/05 16:05:38 by sait-mou          #+#    #+#             */
+/*   Updated: 2026/09/05 16:06:21 by sait-mou         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "codexion.h"
 
 static int	check_burnout(t_sim *sim)
@@ -41,9 +53,8 @@ void	*monitor_routine(void *arg)
 		}
 		if (check_burnout(sim))
 			break ;
-		usleep(200);   /* 200 µs – fast enough for ≤10 ms detection */
+		usleep(200);
 	}
-	/* Final broadcast to wake any threads still waiting on exit */
 	pthread_mutex_lock(&sim->scheduler_mutex);
 	pthread_cond_broadcast(&sim->scheduler_cond);
 	pthread_mutex_unlock(&sim->scheduler_mutex);

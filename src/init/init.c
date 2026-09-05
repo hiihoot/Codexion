@@ -6,7 +6,7 @@
 /*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 10:34:27 by sait-mou          #+#    #+#             */
-/*   Updated: 2026/09/03 11:06:57 by sait-mou         ###   ########.fr       */
+/*   Updated: 2026/09/05 12:21:37 by sait-mou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,6 @@ static int	init_sync_objects(t_sim *sim)
 int	init_sim(t_sim *sim)
 {
 	sim->start_time = get_time_ms();
-	sim->next_request_order = 0;
 	sim->stop = 0;
 	if (!init_sync_objects(sim))
 		return (0);

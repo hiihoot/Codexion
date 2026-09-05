@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   scheduler_helpers.c                                :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/03 16:33:15 by sait-mou          #+#    #+#             */
-/*   Updated: 2026/09/03 16:33:16 by sait-mou         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "codexion.h"
 
 static int	find_request_index(t_sim *sim, t_coder *coder)
@@ -61,23 +49,34 @@ int	acquire_candidate(t_sim *sim, t_coder *coder)
 	return (grant_dongles_to_coder(sim, coder));
 }
 
-void	wait_next(t_sim *sim, long now)
+void	wait_next(t_sim *sim, t_coder *coder)
 {
 	struct timespec	ts;
-	t_coder			*top_coder;
-	long			wait;
+	long		now, last, deadline_ms, cool, wait_ms;
 
-	if (sim->requests.size > 0)
+	now = get_time_ms();
+	pthread_mutex_lock(&sim->state_mutex);
+	last = coder->last_compile_start;
+	pthread_mutex_unlock(&sim->state_mutex);
+
+	deadline_ms = last + sim->time_to_burnout;
+	wait_ms = deadline_ms - now;
+	if (wait_ms < 0)
+		wait_ms = 0;
+
+	/* Wake early when a dongle becomes available */
+	cool = cooldown_left(coder, now);
+	if (cool < wait_ms)
+		wait_ms = cool;
+
+	clock_gettime(CLOCK_REALTIME, &ts);
+	ts.tv_sec += wait_ms / 1000;
+	ts.tv_nsec += (wait_ms % 1000) * 1000000;
+	if (ts.tv_nsec >= 1000000000)
 	{
-		top_coder = sim->requests.items[0]->coder;
-		wait = cooldown_left(top_coder, now);
-		if (wait > 0)
-			set_timeout(&ts, wait);
-		else
-			set_timeout(&ts, 1);
-		pthread_cond_timedwait(&sim->scheduler_cond,
-			&sim->scheduler_mutex, &ts);
+		ts.tv_sec++;
+		ts.tv_nsec -= 1000000000;
 	}
-	else
-		pthread_cond_wait(&sim->scheduler_cond, &sim->scheduler_mutex);
+	pthread_cond_timedwait(&sim->scheduler_cond,
+		&sim->scheduler_mutex, &ts);
 }

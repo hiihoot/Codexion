@@ -6,7 +6,7 @@
 /*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 10:45:33 by sait-mou          #+#    #+#             */
-/*   Updated: 2026/09/03 10:45:34 by sait-mou         ###   ########.fr       */
+/*   Updated: 2026/09/05 09:25:46 by sait-mou         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,6 @@ void	*coder_routine(void *arg)
 		&& get_compile_count(coder->sim, coder)
 		< coder->sim->number_of_compiles_required)
 	{
-		if (get_time_ms() - coder->last_compile_start
-			>= coder->sim->time_to_burnout)
-			break ;
 		if (!take_dongles(coder))
 			return (NULL);
 		compile(coder);

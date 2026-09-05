@@ -1,23 +1,11 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   scheduler.c                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/03 16:33:48 by sait-mou          #+#    #+#             */
-/*   Updated: 2026/09/03 16:33:49 by sait-mou         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "codexion.h"
 
 static int	find_candidate(t_sim *sim, long now)
 {
-	int			i;
-	int			cand;
+	int			i, cand;
 	t_request	*r;
 	t_coder		*c;
+	long		last;
 
 	cand = -1;
 	i = 0;
@@ -25,7 +13,10 @@ static int	find_candidate(t_sim *sim, long now)
 	{
 		r = sim->requests.items[i];
 		c = r->coder;
-		if (now - c->last_compile_start < sim->time_to_burnout)
+		pthread_mutex_lock(&sim->state_mutex);
+		last = c->last_compile_start;
+		pthread_mutex_unlock(&sim->state_mutex);
+		if (now - last < sim->time_to_burnout)
 		{
 			if (dongles_ready(c, now))
 			{
@@ -48,7 +39,7 @@ static int	main_loop(t_sim *sim, t_coder *coder)
 		cand = find_candidate(sim, get_time_ms());
 		if (cand != -1 && sim->requests.items[cand]->coder == coder)
 			return (acquire_candidate(sim, coder));
-		wait_next(sim, get_time_ms());
+		wait_next(sim, coder);
 	}
 	pthread_mutex_unlock(&sim->scheduler_mutex);
 	return (0);
@@ -61,6 +52,7 @@ static int	push_request(t_sim *sim, t_coder *coder)
 	coder->request.deadline = coder->last_compile_start
 		+ sim->time_to_burnout;
 	pthread_mutex_unlock(&sim->state_mutex);
+
 	pthread_mutex_lock(&sim->scheduler_mutex);
 	coder->request.request_order = sim->next_request_order++;
 	if (!heap_push(&sim->requests, &coder->request, sim->scheduler))
@@ -76,8 +68,25 @@ int	scheduler_take_dongles(t_coder *coder)
 	t_sim	*sim;
 
 	sim = coder->sim;
-	if (sim->number_of_coders == 1)
+	if (get_stop(sim))
 		return (0);
+
+	/* Special case: one coder, one dongle */
+	if (sim->number_of_coders == 1)
+	{
+		long now = get_time_ms();
+		if (!dongles_ready(coder, now))
+			return (0);
+		if (!lock_dongles(coder))
+			return (0);
+		if (!get_stop(sim))
+		{
+			/* only one log for the single dongle */
+			log_event(coder, "has taken a dongle");
+		}
+		return (1);
+	}
+
 	if (!push_request(sim, coder))
 		return (0);
 	return (main_loop(sim, coder));
@@ -93,9 +102,18 @@ void	scheduler_drop_dongles(t_coder *coder)
 	coder->left->available_at = avail;
 	if (sim->number_of_coders > 1)
 		coder->right->available_at = avail;
-	pthread_mutex_unlock(&coder->left->mutex);
-	if (sim->number_of_coders > 1)
+
+	if (sim->number_of_coders == 1)
+	{
+		/* Only one mutex to unlock */
+		pthread_mutex_unlock(&coder->left->mutex);
+	}
+	else
+	{
+		pthread_mutex_unlock(&coder->left->mutex);
 		pthread_mutex_unlock(&coder->right->mutex);
+	}
+
 	pthread_mutex_lock(&sim->scheduler_mutex);
 	pthread_cond_broadcast(&sim->scheduler_cond);
 	pthread_mutex_unlock(&sim->scheduler_mutex);

@@ -1,37 +1,27 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   monitor.c                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/03 10:59:06 by sait-mou          #+#    #+#             */
-/*   Updated: 2026/09/03 10:59:07 by sait-mou         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "codexion.h"
-
-void	wake_coders(t_sim *sim)
-{
-	pthread_mutex_lock(&sim->scheduler_mutex);
-	pthread_cond_broadcast(&sim->scheduler_cond);
-	pthread_mutex_unlock(&sim->scheduler_mutex);
-}
 
 static int	check_burnout(t_sim *sim)
 {
-	int	i;
+	long	now;
+	int		i;
+	t_coder	*c;
 
+	now = get_time_ms();
 	i = 0;
 	while (i < sim->number_of_coders)
 	{
-		if (coder_has_burned_out(sim, &sim->coders[i]))
+		c = &sim->coders[i];
+		pthread_mutex_lock(&sim->state_mutex);
+		if (now - c->last_compile_start >= sim->time_to_burnout)
 		{
-			log_event(&sim->coders[i], "burned out");
+			pthread_mutex_unlock(&sim->state_mutex);
+			pthread_mutex_lock(&sim->print_mutex);
+			printf("%ld %d burned out\n", now - sim->start_time, c->id);
+			pthread_mutex_unlock(&sim->print_mutex);
 			set_stop(sim);
 			return (1);
 		}
+		pthread_mutex_unlock(&sim->state_mutex);
 		i++;
 	}
 	return (0);
@@ -51,9 +41,11 @@ void	*monitor_routine(void *arg)
 		}
 		if (check_burnout(sim))
 			break ;
-		usleep(1000);
-		wake_coders(sim);
+		usleep(200);   /* 200 µs – fast enough for ≤10 ms detection */
 	}
-	wake_coders(sim);
+	/* Final broadcast to wake any threads still waiting on exit */
+	pthread_mutex_lock(&sim->scheduler_mutex);
+	pthread_cond_broadcast(&sim->scheduler_cond);
+	pthread_mutex_unlock(&sim->scheduler_mutex);
 	return (NULL);
 }

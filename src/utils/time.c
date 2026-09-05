@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   time.c                                             :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: sait-mou <sait-mou@student.1337.ma>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/09/03 16:34:58 by sait-mou          #+#    #+#             */
-/*   Updated: 2026/09/03 16:34:59 by sait-mou         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "codexion.h"
 
 long	get_time_ms(void)
@@ -34,15 +22,15 @@ void	set_timeout(struct timespec *ts, long wait_ms)
 
 int	lock_dongles(t_coder *coder)
 {
-	pthread_mutex_t	*m1;
-	pthread_mutex_t	*m2;
-	pthread_mutex_t	*tmp;
+	pthread_mutex_t	*m1 = &coder->left->mutex;
+	pthread_mutex_t	*m2 = &coder->right->mutex;
 
-	m1 = &coder->left->mutex;
-	m2 = &coder->right->mutex;
+	if (m1 == m2)   /* only one dongle (n == 1) */
+		return (pthread_mutex_lock(m1) == 0);
+
 	if (m1 > m2)
 	{
-		tmp = m1;
+		pthread_mutex_t *tmp = m1;
 		m1 = m2;
 		m2 = tmp;
 	}
@@ -58,14 +46,19 @@ int	lock_dongles(t_coder *coder)
 
 int	dongles_ready(t_coder *coder, long now)
 {
-	long	left_avail;
-	long	right_avail;
+	long	left_avail, right_avail;
+
+	if (coder->sim->number_of_coders == 1)
+	{
+		pthread_mutex_lock(&coder->left->mutex);
+		left_avail = coder->left->available_at;
+		pthread_mutex_unlock(&coder->left->mutex);
+		return (left_avail <= now);
+	}
 
 	pthread_mutex_lock(&coder->left->mutex);
 	left_avail = coder->left->available_at;
 	pthread_mutex_unlock(&coder->left->mutex);
-	if (coder->sim->number_of_coders == 1)
-		return (left_avail <= now);
 	pthread_mutex_lock(&coder->right->mutex);
 	right_avail = coder->right->available_at;
 	pthread_mutex_unlock(&coder->right->mutex);
@@ -74,22 +67,29 @@ int	dongles_ready(t_coder *coder, long now)
 
 long	cooldown_left(t_coder *coder, long now)
 {
-	long	left;
-	long	right;
+	long	left, right;
+
+	if (coder->sim->number_of_coders == 1)
+	{
+		pthread_mutex_lock(&coder->left->mutex);
+		left = coder->left->available_at - now;
+		if (left < 0)
+			left = 0;
+		pthread_mutex_unlock(&coder->left->mutex);
+		return (left);
+	}
 
 	pthread_mutex_lock(&coder->left->mutex);
 	left = coder->left->available_at - now;
 	if (left < 0)
 		left = 0;
 	pthread_mutex_unlock(&coder->left->mutex);
-	if (coder->sim->number_of_coders == 1)
-		return (left);
+
 	pthread_mutex_lock(&coder->right->mutex);
 	right = coder->right->available_at - now;
 	if (right < 0)
 		right = 0;
 	pthread_mutex_unlock(&coder->right->mutex);
-	if (left > right)
-		return (left);
-	return (right);
+
+	return (left > right ? left : right);
 }
